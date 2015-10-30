@@ -9,25 +9,29 @@ if [ "${ROOT_PASSWORD}" == "**ChangeMe**" -o -z "${ROOT_PASSWORD}" ]; then
    exit 1
 fi
 
-if [ "${SERVICE_NAME}" == "**ChangeMe**" -o -z "${SERVICE_NAME}" ]; then
-   echo "*** ERROR: you need to define SERVICE_NAME environment variable - Exiting ..."
+if [ "${GLUSTER_PEERS}" == "**ChangeMe**" -o -z "${GLUSTER_PEERS}" ]; then
+   echo "*** ERROR: you need to define GLUSTER_PEERS environment variable - Exiting ..."
    exit 1
 fi
 
-# Required stuff to work
-sleep 5
-export GLUSTER_PEERS=`dig +short ${SERVICE_NAME} | sort`
-if [ -z "${GLUSTER_PEERS}" ]; then
-   echo "*** ERROR: Could not determine which containers are part of this service."
-   echo "*** Is this service named \"${SERVICE_NAME}\"? If not, please regenerate the service"
-   echo "*** and add SERVICE_NAME environment variable which value should be equal to this service name"
-   echo "*** Exiting ..."
-   exit 1
+if [ "$USE_PUBLIC_IP_ADDRESS" == "true" ]; then
+   echo "*** INFO: Determining public IP address..."
+   export MY_CLOUD_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+else
+   echo "*** INFO: Determining private IP address..."
+   export MY_CLOUD_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 fi
-export MY_RANCHER_IP=`ip addr | grep inet | grep 10.42 | tail -1 | awk '{print $2}' | awk -F\/ '{print $1}'`
-if [ -z "${MY_RANCHER_IP}" ]; then
-   echo "*** ERROR: Could not determine this container Rancher IP - Exiting ..."
+
+if [ -z "${MY_CLOUD_IP}" ]; then
+   echo "*** WARNING: Could not determine IP address, attempting workaround..."
+   export MY_CLOUD_IP=$(dig +short myip.opendns.com @resolver1.opendns.com)
+fi
+
+if [ -z "${MY_CLOUD_IP}" ]; then
+   echo "*** ERROR: Could not determine IP address - Exiting ..."
    exit 1
+else
+   echo "*** INFO: Determined following IP address as my own: ${MY_CLOUD_IP}"
 fi
 
 echo "root:${ROOT_PASSWORD}" | chpasswd
@@ -41,7 +45,7 @@ echo "SSH_OPTS=\"${SSH_OPTS}\"" >> ${GLUSTER_CONF_FLAG}
 echo "GLUSTER_VOL=\"${GLUSTER_VOL}\"" >> ${GLUSTER_CONF_FLAG}
 echo "GLUSTER_BRICK_PATH=\"${GLUSTER_BRICK_PATH}\"" >> ${GLUSTER_CONF_FLAG}
 echo "DEBUG=\"${DEBUG}\"" >> ${GLUSTER_CONF_FLAG}
-echo "MY_RANCHER_IP=\"${MY_RANCHER_IP}\"" >> ${GLUSTER_CONF_FLAG}
+echo "MY_CLOUD_IP=\"${MY_CLOUD_IP}\"" >> ${GLUSTER_CONF_FLAG}
 
 join-gluster.sh &
 /usr/bin/supervisord
