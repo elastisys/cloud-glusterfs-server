@@ -4,6 +4,11 @@ set -e
 
 [ "$DEBUG" == "1" ] && set -x && set +e
 
+if [ -z "${GLUSTER_IDENTITY}" ]; then
+   echo "*** Must specify a GLUSTER_IDENTITY to use - Exiting ..."
+   exit 1
+fi
+
 if [ "${ROOT_PASSWORD}" == "**ChangeMe**" -o -z "${ROOT_PASSWORD}" ]; then
    echo "*** ERROR: you need to define ROOT_PASSWORD environment variable - Exiting ..."
    exit 1
@@ -46,6 +51,7 @@ echo "GLUSTER_VOL=\"${GLUSTER_VOL}\"" >> ${GLUSTER_CONF_FLAG}
 echo "GLUSTER_BRICK_PATH=\"${GLUSTER_BRICK_PATH}\"" >> ${GLUSTER_CONF_FLAG}
 echo "DEBUG=\"${DEBUG}\"" >> ${GLUSTER_CONF_FLAG}
 echo "MY_CLOUD_IP=\"${MY_CLOUD_IP}\"" >> ${GLUSTER_CONF_FLAG}
+echo "GLUSTER_IDENTITY=\"${GLUSTER_IDENTITY}\"" >> ${GLUSTER_CONF_FLAG}
 
 join-gluster.sh &
 /usr/bin/supervisord

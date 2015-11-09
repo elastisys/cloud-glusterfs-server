@@ -60,7 +60,8 @@ touch ${SEMAPHORE_FILE}
 NUMBER_OF_REPLICAS=`gluster volume info ${GLUSTER_VOL} | grep "Number of Bricks:" | awk '{print $6}'`
 
 # Check if peer container is already part of the cluster
-PEER_STATUS=`gluster peer status | grep -A2 "Hostname: ${PEER}$" | grep State: | awk -F: '{print $2}'`
+PEER_STATUS=`gluster peer status | grep -A2 "^Hostname: ${PEER}" | grep State: | awk -F: '{print $2}'`
+echo "=> Status of ${PEER} is ${PEER_STATUS}"
 if echo "${PEER_STATUS}" | grep "Peer Rejected"; then
    if gluster volume info ${GLUSTER_VOL} | grep ": ${PEER}:${GLUSTER_BRICK_PATH}$" >/dev/null; then
       echo "=> Peer container ${PEER} was part of this cluster but must be dropped now ..."
@@ -84,7 +85,7 @@ NUMBER_OF_REPLICAS=`gluster volume info ${GLUSTER_VOL} | grep "Number of Bricks:
 # Create the volume
 if ! gluster volume list | grep "^${GLUSTER_VOL}$" >/dev/null; then
    echo "=> Creating GlusterFS volume ${GLUSTER_VOL}..."
-   gluster volume create ${GLUSTER_VOL} replica 2 ${MY_CLOUD_IP}:${GLUSTER_BRICK_PATH} ${PEER}:${GLUSTER_BRICK_PATH} force || detach
+   gluster volume create ${GLUSTER_VOL} replica 2 ${GLUSTER_IDENTITY}:${GLUSTER_BRICK_PATH} ${PEER}:${GLUSTER_BRICK_PATH} force || detach
    sleep 1
 fi
 

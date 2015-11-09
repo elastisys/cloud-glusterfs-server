@@ -2,9 +2,22 @@ gluster-server:
         image: elastisys/cloud-glusterfs-server:latest
         privileged: true # needed for Gluster FS
         environment:
-         - ROOT_PASSWORD="**ChangeMe**" # Change this, or server won't start
-         - GLUSTER_PEERS="1.2.3.4 5.6.7.8" # Set to the trusted pool IP addrs 
-         - USE_PUBLIC_IP_ADDRESS="false" # Do as you wish!
+         - ROOT_PASSWORD=**ChangeMe** # Change this, or server won't start
+         - GLUSTER_PEERS=gluster2 gluster3 # Set to the trusted pool IP addrs 
+         - USE_PUBLIC_IP_ADDRESS=false # Do as you wish!
+         - GLUSTER_IDENTITY=gluster1 # which one are we?
+
+        # Docker host name trickery will screw up our hostnames, and
+        # we need to explicitly state them below
+        # For each node in your cluster, choose an appropriate host name
+        # and set it to the loopback address for that node, while
+        # leaving the other ones as they should be
+        extra_hosts:
+         - "gluster1:127.0.0.1"
+         - "gluster2:1.2.3.4"
+         - "gluster3:5.6.7.8"
+        volumes:
+         - "/var/gluster:/gluster_volume"
         ports:
          - "2222:2222" # SSH_PORT
          - "111:111"

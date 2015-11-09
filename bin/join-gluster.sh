@@ -51,7 +51,7 @@ fi
 check_if_already_joined
 
 echo "=> Joining cluster with container ${PEER} ..."
-sshpass -p ${ROOT_PASSWORD} ssh ${SSH_OPTS} ${SSH_USER}@${PEER} "add-gluster-peer.sh ${MY_CLOUD_IP}"
+sshpass -p ${ROOT_PASSWORD} ssh ${SSH_OPTS} ${SSH_USER}@${PEER} "add-gluster-peer.sh ${GLUSTER_IDENTITY}"
 if [ $? -eq 0 ]; then
    echo "=> Successfully joined cluster with container ${PEER} ..."
 else
