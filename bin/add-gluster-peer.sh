@@ -80,8 +80,6 @@ if ! echo "${PEER_STATUS}" | grep "Peer in Cluster" >/dev/null; then
     sleep 5
 fi
 
-# Check how many peers are already joined in the cluster - needed to add a replica
-NUMBER_OF_REPLICAS=`gluster volume info ${GLUSTER_VOL} | grep "Number of Bricks:" | awk '{print $6}'`
 # Create the volume
 if ! gluster volume list | grep "^${GLUSTER_VOL}$" >/dev/null; then
    echo "=> Creating GlusterFS volume ${GLUSTER_VOL}..."
@@ -98,6 +96,8 @@ if ! gluster volume status ${GLUSTER_VOL} >/dev/null; then
    gluster volume quota ${GLUSTER_VOL} enable 
 fi
 
+# Check how many peers are already joined in the cluster - needed to add a replica
+NUMBER_OF_REPLICAS=`gluster volume info ${GLUSTER_VOL} | grep "Number of Bricks:" | awk '{print $6}'`
 if ! gluster volume info ${GLUSTER_VOL} | grep ": ${PEER}:${GLUSTER_BRICK_PATH}$" >/dev/null; then
    echo "=> Adding brick ${PEER}:${GLUSTER_BRICK_PATH} to the cluster (replica=$((NUMBER_OF_REPLICAS+1)))..."
    gluster volume add-brick ${GLUSTER_VOL} replica $((NUMBER_OF_REPLICAS+1)) ${PEER}:${GLUSTER_BRICK_PATH} force || detach
