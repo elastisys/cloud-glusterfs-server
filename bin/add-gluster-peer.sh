@@ -99,6 +99,8 @@ fi
 # Check how many peers are already joined in the cluster - needed to add a replica
 NUMBER_OF_REPLICAS=`gluster volume info ${GLUSTER_VOL} | grep "Number of Bricks:" | awk '{print $6}'`
 if ! gluster volume info ${GLUSTER_VOL} | grep ": ${PEER}:${GLUSTER_BRICK_PATH}$" >/dev/null; then
+   echo "=> Info from gluser volume info ${GLUSER_VOL} follows..."
+   gluster volume info ${GLUSTER_VOL}
    echo "=> Adding brick ${PEER}:${GLUSTER_BRICK_PATH} to the cluster (replica=$((NUMBER_OF_REPLICAS+1)))..."
    gluster volume add-brick ${GLUSTER_VOL} replica $((NUMBER_OF_REPLICAS+1)) ${PEER}:${GLUSTER_BRICK_PATH} force || detach
 fi

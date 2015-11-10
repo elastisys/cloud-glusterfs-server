@@ -13,7 +13,7 @@ gluster-server:
         # and set it to the loopback address for that node, while
         # leaving the other ones as they should be
         extra_hosts:
-         - "gluster1:127.0.0.1"
+         - "gluster1:127.0.0.1" # one of these MUST match GLUSTER_IDENTITY
          - "gluster2:1.2.3.4"
          - "gluster3:5.6.7.8"
         volumes:
